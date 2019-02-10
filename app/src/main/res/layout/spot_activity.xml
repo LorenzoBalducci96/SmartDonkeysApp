@@ -10,4 +10,37 @@
         android:id="@+id/videoView"
         android:layout_width="match_parent"
         android:layout_height="237dp" />
+
+    <TextView
+        android:id="@+id/domanda"
+        android:layout_width="match_parent"
+        android:layout_height="78dp"
+        android:text="Lorem Ipsum dolor sit amet"
+        android:textColor="@android:color/background_dark"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/opzione1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
+    <Button
+        android:id="@+id/opzione2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
+    <Button
+        android:id="@+id/opzione3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
+    <Button
+        android:id="@+id/opzione4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
 </LinearLayout>

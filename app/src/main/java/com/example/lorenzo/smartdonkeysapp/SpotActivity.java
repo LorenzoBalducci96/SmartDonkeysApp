@@ -1,53 +1,198 @@
 package com.example.lorenzo.smartdonkeysapp;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.VideoView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class SpotActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
 
     Connection connection;
     VideoView videoView;
+    TextView domanda;
+    Button opzione1;
+    Button opzione2;
+    Button opzione3;
+    Button opzione4;
+    int spotId;
+    ProgressDialog progress;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.spot_activity);
+        progress = new ProgressDialog(this);
 
-        this.connection = (Connection) getIntent().getSerializableExtra("connection");
+        this.connection = ConnectionHandler.getConnection();
+        videoView = findViewById(R.id.videoView);
+        domanda = findViewById(R.id.domanda);
+        opzione1 = findViewById(R.id.opzione1);
+        opzione2 = findViewById(R.id.opzione2);
+        opzione3 = findViewById(R.id.opzione3);
+        opzione4 = findViewById(R.id.opzione4);
+        opzione1.setOnClickListener(this);
+        opzione2.setOnClickListener(this);
+        opzione3.setOnClickListener(this);
+        opzione4.setOnClickListener(this);
 
-        videoView.setVideoPath("android.resource://"+getPackageName()+"/"+R.raw.video01);
-        videoView.start();
-        Spot spotRicevuto = connection.requestSpot();
+        //asyncPlaying();
+
+
+        RequestSpot downloadContent = new RequestSpot(connection);
+        try{
+            downloadContent.execute();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        progress.setTitle("Download");
+        progress.setMessage("per favore, attendi il download dello spot...");
+        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+        progress.show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        Button button = findViewById(v.getId());
+        String ris = button.getText().toString();
+        Answer answer = new Answer(ris, spotId);
+        progress.setTitle("Invio risposta");
+        progress.setMessage("attendere l'esito della risposta...");
+        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+        progress.show();
+        SendAnswer sendAnswer = new SendAnswer(answer);
+        sendAnswer.execute();
+
+
+    }
+
+    public class SendAnswer extends AsyncTask<Void, Void, Result> {
+
+        Answer answer;
+
+        SendAnswer(Answer answer) {
+            this.answer = answer;
+        }
+
+        @Override
+        protected Result doInBackground(Void... voids) {
+            return connection.sendAnswer(answer);
+        }
+
+        @Override
+        protected void onPostExecute(final Result result) {
+            progress.dismiss();
+            /*
+            AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
+            alertDialog.setMessage(result.getResult());
+            alertDialog.show();
+
+            finish();
+            */
+            AlertDialog.Builder builder = new AlertDialog.Builder(SpotActivity.this);
+            builder.setMessage(result.getResult())
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finish();
+                        }
+                    }).create().show();
+        }
+    }
+
+    public class RequestSpot extends AsyncTask<Void, Void, Spot> {
+
+        Connection connection;
+
+        RequestSpot(Connection connection){
+            this.connection = connection;
+        }
+
+        @Override
+        protected Spot doInBackground(Void... voids) {
+            return connection.requestSpot();
+        }
+
+        @Override
+        protected void onPostExecute(final Spot spot) {
+            progress.dismiss();
+            try {
+                File outputDir = getApplicationContext().getCacheDir(); // context being the Activity pointer
+                File outputFile = File.createTempFile("prefix", "extension", outputDir);
+                FileOutputStream stream = new FileOutputStream(outputFile.getAbsolutePath());
+                stream.write(spot.getVideo());
+                videoView.setVideoPath(outputFile.getAbsolutePath());
+                domanda.setText(spot.getQuestion());
+                opzione1.setText(spot.getAnswers().get(0));
+                opzione2.setText(spot.getAnswers().get(1));
+                opzione3.setText(spot.getAnswers().get(2));
+                opzione4.setText(spot.getAnswers().get(3));
+                spotId = spot.getSpotId();
+                videoView.start();
+            }catch(IOException e){
+            }
+        }
     }
 
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return null;
-    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    protected void asyncPlaying(){
+        while(this.connection.thereIsCachedSpot() == 0){//is downloading
+            //mostra rotellina girare
+            //teoricamente non dovrebbe andarci perche e gestito asincrono
+        }
+        if(this.connection.thereIsCachedSpot() > 0){
+            Spot spotDaRiprodurre = connection.getCachedSpot();
+            File file = new File("video");
+            try {
 
-    }
+                FileOutputStream outputStream;
+                outputStream = openFileOutput("video", Context.MODE_PRIVATE);
+                outputStream.write(spotDaRiprodurre.getVideo());
+                outputStream.close();
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else{//no spot disponibili per ora
 
+        }
+
+        //videoView.setVideoPath("android.resource://"+getPackageName()+"/"+R.raw.video01);
+        //videoView.start();
+        //Spot spotRicevuto = connection.requestSpot();
     }
 }
 

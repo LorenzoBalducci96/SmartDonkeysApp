@@ -1,21 +1,23 @@
 package com.example.lorenzo.smartdonkeysapp;
 
+import android.app.Application;
+
 import java.io.Serializable;
 
 public class LoginPacket implements Serializable {
-    private boolean success_login;
-    private String username;
+    private String email;
+    private String password;//tutta la comunicazione verra cifrata
 
-    public LoginPacket(boolean success_login, String username){
-        this.success_login = success_login;
-        this.username = username;
+    public LoginPacket(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public boolean isSuccess_login() {
-        return success_login;
+    public String getPassword() {
+        return password;
     }
 }

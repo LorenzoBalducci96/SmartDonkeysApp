@@ -13,4 +13,5 @@
     <string name="success_login">"connessione effettuata con successo"</string>
     <string name="unsuccess_login">"credenziali invalide"</string>
     <string name="connection_error">"problemi di connessione...ci scusiamo per il disagio"</string>
+    <string name="protocol_error">"errore nel protocollo di comunicazione, riavviare l'applicazione"</string>
 </resources>
