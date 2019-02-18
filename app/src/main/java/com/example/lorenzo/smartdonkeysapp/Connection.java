@@ -1,86 +1,111 @@
 package com.example.lorenzo.smartdonkeysapp;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 
-import android.app.Application;
-import android.content.Context;
-import android.content.Intent;
+import com.example.lorenzo.smartdonkeysapp.model.Answer;
+import com.example.lorenzo.smartdonkeysapp.model.LoginMessage;
+import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
+import com.example.lorenzo.smartdonkeysapp.model.Message;
+import com.example.lorenzo.smartdonkeysapp.model.Result;
+import com.example.lorenzo.smartdonkeysapp.model.Spot;
+import com.example.lorenzo.smartdonkeysapp.model.UserData;
+import com.example.lorenzo.smartdonkeysapp.model.VideoListMessage;
+import com.example.lorenzo.smartdonkeysapp.model.VideoRequestMessage;
 
 public class Connection implements Serializable {
-    private String server_ip_address = "192.168.1.165"; //loopback ip address
+    private String server_ip_address = "80.211.59.134";//"93.41.39.42"; //loopback ip address
     private int server_port = 5000;
     Socket socket = null;
     private ObjectOutputStream os = null;
     private ObjectInputStream is = null;
-    private Spot spot;
+    private Message cachedMessage;
 
     public Connection(){
 
     }
 
-    public UserWelcome doLogin(String email, String password){
+    public Connection(String serverIp){
+        server_ip_address = serverIp;
+    }
+
+    public Message doLogin(String email, String password){
         try {
-            LoginPacket loginPacket = new LoginPacket(email, password);
+            LoginMessage loginMessage = new LoginMessage(email, password);
             //if(socket == null) {
                 socket = new Socket(server_ip_address, server_port);
                 os = new ObjectOutputStream(socket.getOutputStream());
                 is = new ObjectInputStream(socket.getInputStream());
             //}
-            os.writeObject(loginPacket);
+            os.writeObject(loginMessage);
             os.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE, "errore imprevisto, controlla la connessione e riavvia l'applicazione");
         }
 
         try {
-            UserWelcome userWelcome = (UserWelcome) is.readObject();
-            return userWelcome;
-        } catch (IOException e) {
-            e.printStackTrace();
+            Message message = (Message) is.readObject();
+            return message;
         } catch (ClassNotFoundException e) {
-            System.out.println("errore nel protocollo di comunicazione");
-            return new UserWelcome(false, "", "errore nel protocollo di comunicazione, per favore, riavvia l'applicazione");
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE,"errore nel protocollo di comunicazione, per favore, riavvia l'applicazione");
+        } catch (Exception e) {
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE,"errore imprevisto, per favore, riavvia l'applicazione");
         }
-        return new UserWelcome(false, "", "errore imprevisto, per favore, riavvia l'applicazione");
+
     }
 
-    public void requestDownloadData(){
+    public Message requestUserData(){
         try {
-            os.write(1);//code for request download data
+            os.writeObject(new Message(MESSAGE_TYPE.REQUEST_USER_DATA, ""));//code for request user data
             os.flush();
-            this.spot = (Spot) is.readObject();
+            Message userData = (Message) is.readObject();
+            return userData;
         } catch (IOException e) {
             e.printStackTrace();
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE,"errore nella comunicazione con il server, ti invitiamo a riprovare");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE,"errore inatteso dal server, ti invitiamo a riprovare");
         }
     }
 
-    public int thereIsCachedSpot(){//return 0 if is downloading, -1 if there isn't news on server, 1 if there is
-        if(this.spot == null)
-            return 0;//downloading
-        if(this.spot.getSpotId() == -1)
-            return -1;
-        else
-            return this.spot.getSpotId();
-    }
-
-    public Spot requestSpot(){
+    public Message requestVideoList() {
         try {
-            os.write(1);//code for request download data
+            os.writeObject(new Message(MESSAGE_TYPE.REQUEST_VIDEO_LIST, ""));
             os.flush();
-            this.spot = (Spot) is.readObject();
+            Message message = (Message) is.readObject();
+            return message;
         } catch (IOException e) {
             e.printStackTrace();
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE, "errore nella comunicazione con il server");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            return new Message(MESSAGE_TYPE.ERROR_MESSAGE, "errore nella comunicazione con il server");
         }
-        return this.spot;
+    }
+
+    public Boolean requestSpot(String spotId){
+        VideoRequestMessage videoRequestMessage = new VideoRequestMessage(spotId);
+        try {
+            os.writeObject(videoRequestMessage);
+            os.flush();
+            cachedMessage = (Message) is.readObject();
+            return true;
+        }catch(IOException e){
+            e.printStackTrace();
+            return false;
+        }catch(ClassNotFoundException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public Message getCachedMessage() {
+        return cachedMessage;
     }
 
     public Result sendAnswer(Answer answer){
@@ -93,10 +118,6 @@ public class Connection implements Serializable {
             e.printStackTrace();//non ha funzionato il cast a Result
         }
         return new Result("ci sono stati problemi di connessione, riprova di nuovo");
-    }
-
-    public Spot getCachedSpot(){
-        return this.spot;
     }
 
     //public Spot requestSpot(){

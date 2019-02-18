@@ -1,38 +1,26 @@
 package com.example.lorenzo.smartdonkeysapp;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.app.LoaderManager.LoaderCallbacks;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.example.lorenzo.smartdonkeysapp.model.Answer;
+import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
+import com.example.lorenzo.smartdonkeysapp.model.Message;
+import com.example.lorenzo.smartdonkeysapp.model.Result;
+import com.example.lorenzo.smartdonkeysapp.model.Spot;
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -66,21 +54,37 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         opzione3.setOnClickListener(this);
         opzione4.setOnClickListener(this);
 
-        //asyncPlaying();
+        try {
+            Message message = connection.getCachedMessage();
 
-
-        RequestSpot downloadContent = new RequestSpot(connection);
-        try{
-            downloadContent.execute();
-        }catch(Exception e){
+            if(message.getMessageCode().equals(MESSAGE_TYPE.SPOT)) {
+                Spot spot = (Spot) message;
+                File outputDir = getApplicationContext().getCacheDir(); // context being the Activity pointer
+                File outputFile = File.createTempFile("prefix", "extension", outputDir);
+                FileOutputStream stream = new FileOutputStream(outputFile.getAbsolutePath());
+                stream.write(spot.getVideo());
+                videoView.setVideoPath(outputFile.getAbsolutePath());
+                domanda.setText(spot.getQuestion());
+                opzione1.setText(spot.getAnswers().get(0));
+                opzione2.setText(spot.getAnswers().get(1));
+                opzione3.setText(spot.getAnswers().get(2));
+                opzione4.setText(spot.getAnswers().get(3));
+                spotId = spot.getSpotId();
+                videoView.start();
+            }
+            else if(message.getMessageCode().equals(MESSAGE_TYPE.ERROR_MESSAGE)){
+                AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
+                alertDialog.setMessage(message.getServiceMessage());
+                alertDialog.show();
+            }
+            else{
+                AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
+                alertDialog.setMessage("risposta inattesa dal server, ti preghiamo di riavviare l'applicazione");
+                alertDialog.show();
+            }
+        }catch(IOException e){
             e.printStackTrace();
         }
-
-
-        progress.setTitle("Download");
-        progress.setMessage("per favore, attendi il download dello spot...");
-        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
-        progress.show();
     }
 
     @Override
@@ -94,8 +98,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         progress.show();
         SendAnswer sendAnswer = new SendAnswer(answer);
         sendAnswer.execute();
-
-
     }
 
     public class SendAnswer extends AsyncTask<Void, Void, Result> {
@@ -129,70 +131,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }).create().show();
         }
-    }
-
-    public class RequestSpot extends AsyncTask<Void, Void, Spot> {
-
-        Connection connection;
-
-        RequestSpot(Connection connection){
-            this.connection = connection;
-        }
-
-        @Override
-        protected Spot doInBackground(Void... voids) {
-            return connection.requestSpot();
-        }
-
-        @Override
-        protected void onPostExecute(final Spot spot) {
-            progress.dismiss();
-            try {
-                File outputDir = getApplicationContext().getCacheDir(); // context being the Activity pointer
-                File outputFile = File.createTempFile("prefix", "extension", outputDir);
-                FileOutputStream stream = new FileOutputStream(outputFile.getAbsolutePath());
-                stream.write(spot.getVideo());
-                videoView.setVideoPath(outputFile.getAbsolutePath());
-                domanda.setText(spot.getQuestion());
-                opzione1.setText(spot.getAnswers().get(0));
-                opzione2.setText(spot.getAnswers().get(1));
-                opzione3.setText(spot.getAnswers().get(2));
-                opzione4.setText(spot.getAnswers().get(3));
-                spotId = spot.getSpotId();
-                videoView.start();
-            }catch(IOException e){
-            }
-        }
-    }
-
-
-
-    protected void asyncPlaying(){
-        while(this.connection.thereIsCachedSpot() == 0){//is downloading
-            //mostra rotellina girare
-            //teoricamente non dovrebbe andarci perche e gestito asincrono
-        }
-        if(this.connection.thereIsCachedSpot() > 0){
-            Spot spotDaRiprodurre = connection.getCachedSpot();
-            File file = new File("video");
-            try {
-
-                FileOutputStream outputStream;
-                outputStream = openFileOutput("video", Context.MODE_PRIVATE);
-                outputStream.write(spotDaRiprodurre.getVideo());
-                outputStream.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else{//no spot disponibili per ora
-
-        }
-
-        //videoView.setVideoPath("android.resource://"+getPackageName()+"/"+R.raw.video01);
-        //videoView.start();
-        //Spot spotRicevuto = connection.requestSpot();
     }
 }
 

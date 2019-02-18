@@ -1,8 +1,8 @@
-package com.example.lorenzo.smartdonkeysapp;
+package com.example.lorenzo.smartdonkeysapp.model;
 
 import java.io.Serializable;
 
-public class CreateAccountPacket implements Serializable {
+public class CreateAccountMessage extends Message implements Serializable {
     private String email;
     private String username;
     private String password;
@@ -24,8 +24,8 @@ public class CreateAccountPacket implements Serializable {
         return Preferenze;
     }
 
-    public CreateAccountPacket(String email, String username, String password, String preferenze) {
-
+    public CreateAccountMessage(String email, String username, String password, String preferenze) {
+        super(MESSAGE_TYPE.CREATE_ACCOUNT_MESSAGE, "");
         this.email = email;
         this.username = username;
         this.password = password;

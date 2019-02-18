@@ -1,14 +1,15 @@
-package com.example.lorenzo.smartdonkeysapp;
+package com.example.lorenzo.smartdonkeysapp.model;
 
 import android.app.Application;
 
 import java.io.Serializable;
 
-public class LoginPacket implements Serializable {
+public class LoginMessage extends Message implements Serializable {
     private String email;
     private String password;//tutta la comunicazione verra cifrata
 
-    public LoginPacket(String email, String password) {
+    public LoginMessage(String email, String password) {
+        super(MESSAGE_TYPE.LOGIN_MESSAGE,"");
         this.email = email;
         this.password = password;
     }

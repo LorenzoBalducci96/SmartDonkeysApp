@@ -1,0 +1,15 @@
+package com.example.lorenzo.smartdonkeysapp.model;
+
+public enum MESSAGE_TYPE {
+    LOGIN_MESSAGE,
+    CREATE_ACCOUNT_MESSAGE,
+    VIDEO_LIST_MESSAGE,
+    ANSWER,
+    REQUEST_VIDEO,
+    REQUEST_VIDEO_LIST,
+    ERROR_MESSAGE,
+    USER_WELCOME_MESSAGE,
+    USER_DATA_MESSAGE,
+    REQUEST_USER_DATA,
+    SPOT;
+}

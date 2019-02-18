@@ -5,36 +5,25 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.Manifest.permission.READ_CONTACTS;
+import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
+import com.example.lorenzo.smartdonkeysapp.model.Message;
+import com.example.lorenzo.smartdonkeysapp.model.UserWelcomeMessage;
 
 /**
  * A login screen that offers login via email/password.
@@ -48,17 +37,21 @@ public class LoginActivity extends AppCompatActivity{
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
+    private EditText serverIp;
     private View mProgressView;
     private View mLoginFormView;
     private Connection connection;
-    private UserWelcome userWelcomeRetrived = null;
+    private UserWelcomeMessage userWelcomeMessageRetrived = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        connection = new Connection();
-        ConnectionHandler.setConnection(connection);
+
+        //TODO modalita normale
+        //connection = new Connection(serverIp.getText().toString());
+        //ConnectionHandler.setConnection(connection);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
@@ -87,6 +80,14 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void attemptLogin() {
+        serverIp = (EditText) findViewById(R.id.server_ip);
+        if(serverIp.getText().toString().isEmpty())
+            connection = new Connection();
+        else
+            connection = new Connection(serverIp.getText().toString());
+        ConnectionHandler.setConnection(connection);
+
+
         if (mAuthTask != null) {
             return;
         }
@@ -135,17 +136,17 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void changeActivity(){
-        if(userWelcomeRetrived != null){
+        if(userWelcomeMessageRetrived != null){
             AlertDialog loginDialog = new AlertDialog.Builder(LoginActivity.this).create();
-            if (userWelcomeRetrived.isSuccess_login()) {
+            if (userWelcomeMessageRetrived.isSuccess_login()) {
                 loginDialog.setMessage(getString(R.string.success_login));
                 loginDialog.show();
                 Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
-                intent.putExtra("welcome_message", userWelcomeRetrived.getWelcome_or_error_message());
+                intent.putExtra("welcome_message", userWelcomeMessageRetrived.getWelcomeMessage());
                 startActivity(intent);
                 finish();
             } else {
-                loginDialog.setMessage(userWelcomeRetrived.getWelcome_or_error_message());
+                loginDialog.setMessage(userWelcomeMessageRetrived.getWelcomeMessage());//username o password errati
                 loginDialog.show();
             }
         }
@@ -196,7 +197,7 @@ public class LoginActivity extends AppCompatActivity{
     }
 
 
-    public class UserLoginTask extends AsyncTask<Void, Void, UserWelcome> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Message> {
 
         private final String mEmail;
         private final String mPassword;
@@ -208,18 +209,28 @@ public class LoginActivity extends AppCompatActivity{
         }
 
         @Override
-        protected UserWelcome doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+        protected Message doInBackground(Void... params) {
             return connection.doLogin(mEmail, mPassword);
         }
 
         @Override
-        protected void onPostExecute(final UserWelcome userWelcome) {
+        protected void onPostExecute(final Message message) {
             mAuthTask = null;
             showProgress(false);
-            userWelcomeRetrived = userWelcome;
-
-            changeActivity();
+            if(message.getMessageCode() == MESSAGE_TYPE.USER_WELCOME_MESSAGE) {
+                userWelcomeMessageRetrived = (UserWelcomeMessage) message;
+                changeActivity();
+            }
+            else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){
+                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+                alertDialog.setMessage(message.getServiceMessage());
+                alertDialog.show();
+            }
+            else {
+                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+                alertDialog.setMessage("risposta inattesa dal server, ti invitiamo a riprovare");
+                alertDialog.show();
+            }
             //finish();
         }
 

@@ -1,4 +1,4 @@
-package com.example.lorenzo.smartdonkeysapp;
+package com.example.lorenzo.smartdonkeysapp.model;
 
 import java.io.Serializable;
 

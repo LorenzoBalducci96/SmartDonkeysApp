@@ -1,28 +1,20 @@
 package com.example.lorenzo.smartdonkeysapp;
 
-import android.app.AlertDialog;
-import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Intent;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-
-import java.io.IOException;
 
 public class MenuActivity extends AppCompatActivity {
 
     private Connection connection;
     private TextView welcomeMessage;
     private Button guardaSpot;
+    private Button visualizzaProfilo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,38 +30,26 @@ public class MenuActivity extends AppCompatActivity {
                 guardaSpotPubblicitario();
             }
         });
-        welcomeMessage.setText(getIntent().getStringExtra("welcome_message"));
 
-        /*
-        DownloadContent downloadContent = new DownloadContent(connection);
-        try{
-            downloadContent.execute();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        */
+        visualizzaProfilo = findViewById(R.id.visualizza_profilo);
+        visualizzaProfilo.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                visualizzaProfilo();
+            }
+        });
+
+        welcomeMessage.setText(getIntent().getStringExtra("welcome_message"));
     }
 
-    private void guardaSpotPubblicitario(){
-        Intent intent = new Intent(getApplicationContext(), SpotActivity.class);
+    private void visualizzaProfilo(){
+        Intent intent = new Intent(getApplicationContext(), VisualizzaProfiloActivity.class);
         startActivity(intent);
     }
 
-    public class DownloadContent extends AsyncTask<Void, Void, Void> {
-
-        Connection connection;
-
-        DownloadContent(Connection connection){
-            this.connection = connection;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            connection.requestDownloadData();
-            return null ;
-        }
+    private void guardaSpotPubblicitario(){
+        Intent intent = new Intent(getApplicationContext(), VideoListActivity.class);
+        startActivity(intent);
     }
-
-
 }
 
