@@ -34,17 +34,22 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
 
     Connection connection;
     ProgressDialog progress;
-    ImageView slot1;
+    ImageView[] imageView = new ImageView[4];
+
     Button button1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.video_list_activity);
-        slot1 = findViewById(R.id.imageView);
-        slot1.setOnClickListener(this);
-        button1 = findViewById(R.id.buttonSpot1);
-        button1.setOnClickListener(this);
+        imageView[0] = findViewById(R.id.imageView1);
+        imageView[0].setOnClickListener(this);
+        imageView[1] = findViewById(R.id.imageView2);
+        imageView[1].setOnClickListener(this);
+        imageView[2] = findViewById(R.id.imageView3);
+        imageView[2].setOnClickListener(this);
+        imageView[3] = findViewById(R.id.imageView4);
+        imageView[3].setOnClickListener(this);
         progress = new ProgressDialog(this);
 
         this.connection = ConnectionHandler.getConnection();
@@ -120,11 +125,13 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
             if(message.getMessageCode().equals(MESSAGE_TYPE.VIDEO_LIST_MESSAGE)){
                 VideoListMessage videoListMessage = (VideoListMessage) message;
 
+                int count = 0;
                 for (AvailableVideoInfo videoInfo : videoListMessage.getListaVideoDisponibili()) {
                     Bitmap bitmap = BitmapFactory.decodeByteArray(videoInfo.getImage(), 0, videoInfo.getImage().length);
-                    slot1.setImageBitmap(bitmap);
-                    slot1.setClickable(true);
-                    slot1.setTag(videoInfo.getIdVideo());
+                    imageView[count].setImageBitmap(bitmap);
+                    imageView[count].setClickable(true);
+                    imageView[count].setTag(videoInfo.getIdVideo());
+                    count++;
                 }
             }
             else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){
