@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class Answer extends Message implements Serializable {
     private String answer;
-    private int spotId;
+    private String spotId;
 
-    public Answer(String answer, int spotId) {
+    public Answer(String answer, String spotId) {
         super(MESSAGE_TYPE.ANSWER, "");
         this.answer = answer;
         this.spotId = spotId;
@@ -16,7 +16,7 @@ public class Answer extends Message implements Serializable {
         return answer;
     }
 
-    public int getSpotId() {
+    public String getSpotId() {
         return spotId;
     }
 }

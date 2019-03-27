@@ -1,26 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     android:orientation="vertical"
     tools:context=".MenuActivity">
 
+    <ImageView
+        android:id="@+id/profile_image_icon"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        app:srcCompat="@mipmap/ic_launcher_round" />
+
     <TextView
+        android:id="@+id/username_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="lorem ipsum"
+        android:textColor="#FFF"
+        android:textSize="24sp" />
+
+    <TextView
+        android:textColor="#FFF"
         android:id="@+id/WelcomeMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="TextView" />
 
-    <Button
-        android:id="@+id/visualizza_profilo"
+    <TextView
+        android:id="@+id/coins_number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Visualizza Profilo" />
+        android:text="TextView"
+        android:textColor="#FFF" />
 
     <Button
         android:id="@+id/guarda_spot"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="guarda spot pubblicitario" />
+        android:layout_width="115dp"
+        android:layout_height="115dp"
+        android:layout_marginTop="5dp"
+        android:background="@mipmap/play" />
+
+    <Button
+        android:id="@+id/mercatino"
+        android:layout_width="115dp"
+        android:layout_height="115dp"
+        android:layout_marginTop="5dp"
+        android:background="@mipmap/cart" />
+
+    <Button
+        android:id="@+id/gioca"
+        android:layout_width="115dp"
+        android:layout_height="115dp"
+        android:background="@mipmap/games" />
 </LinearLayout>

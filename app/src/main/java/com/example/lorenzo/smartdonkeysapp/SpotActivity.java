@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,7 +32,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     Button opzione2;
     Button opzione3;
     Button opzione4;
-    int spotId;
+    String spotId;
     ProgressDialog progress;
 
 
@@ -100,7 +101,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         sendAnswer.execute();
     }
 
-    public class SendAnswer extends AsyncTask<Void, Void, Result> {
+    public class SendAnswer extends AsyncTask<Void, Void, Message> {
 
         Answer answer;
 
@@ -109,27 +110,38 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected Result doInBackground(Void... voids) {
+        protected Message doInBackground(Void... voids) {
             return connection.sendAnswer(answer);
         }
 
         @Override
-        protected void onPostExecute(final Result result) {
+        protected void onPostExecute(final Message message) {
             progress.dismiss();
-            /*
-            AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
-            alertDialog.setMessage(result.getResult());
-            alertDialog.show();
+            if(message.getMessageCode().equals(MESSAGE_TYPE.RESULT)){
+                Result result = (Result) message;
+                AlertDialog.Builder builder = new AlertDialog.Builder(SpotActivity.this);
+                LayoutInflater inflater;
 
-            finish();
-            */
-            AlertDialog.Builder builder = new AlertDialog.Builder(SpotActivity.this);
-            builder.setMessage(result.getResult())
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            finish();
-                        }
-                    }).create().show();
+
+
+
+                connection.updateCoins(result.getEarnedCoins());
+                builder.setMessage(result.getResult() + "\ncoin guadagnati:" + result.getEarnedCoins())
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                finish();
+                            }
+                        }).create().show();
+            }
+            else{
+                AlertDialog.Builder builder = new AlertDialog.Builder(SpotActivity.this);
+                builder.setMessage(message.getServiceMessage())
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                finish();
+                            }
+                        }).create().show();
+            }
         }
     }
 }

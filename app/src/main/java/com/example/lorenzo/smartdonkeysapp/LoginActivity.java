@@ -136,20 +136,12 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void changeActivity(){
-        if(userWelcomeMessageRetrived != null){
-            AlertDialog loginDialog = new AlertDialog.Builder(LoginActivity.this).create();
-            if (userWelcomeMessageRetrived.isSuccess_login()) {
-                loginDialog.setMessage(getString(R.string.success_login));
-                loginDialog.show();
-                Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
-                intent.putExtra("welcome_message", userWelcomeMessageRetrived.getWelcomeMessage());
-                startActivity(intent);
-                finish();
-            } else {
-                loginDialog.setMessage(userWelcomeMessageRetrived.getWelcomeMessage());//username o password errati
-                loginDialog.show();
-            }
-        }
+        AlertDialog loginDialog = new AlertDialog.Builder(LoginActivity.this).create();
+        loginDialog.setMessage(getString(R.string.success_login));
+        loginDialog.show();
+        Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private boolean isEmailValid(String email) {
@@ -218,7 +210,6 @@ public class LoginActivity extends AppCompatActivity{
             mAuthTask = null;
             showProgress(false);
             if(message.getMessageCode() == MESSAGE_TYPE.USER_WELCOME_MESSAGE) {
-                userWelcomeMessageRetrived = (UserWelcomeMessage) message;
                 changeActivity();
             }
             else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){

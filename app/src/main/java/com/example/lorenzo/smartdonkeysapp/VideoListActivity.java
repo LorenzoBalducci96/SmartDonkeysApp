@@ -12,10 +12,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.lorenzo.smartdonkeysapp.model.Answer;
 import com.example.lorenzo.smartdonkeysapp.model.AvailableVideoInfo;
@@ -34,22 +37,13 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
 
     Connection connection;
     ProgressDialog progress;
-    ImageView[] imageView = new ImageView[4];
-
-    Button button1;
+    LinearLayout layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.video_list_activity);
-        imageView[0] = findViewById(R.id.imageView1);
-        imageView[0].setOnClickListener(this);
-        imageView[1] = findViewById(R.id.imageView2);
-        imageView[1].setOnClickListener(this);
-        imageView[2] = findViewById(R.id.imageView3);
-        imageView[2].setOnClickListener(this);
-        imageView[3] = findViewById(R.id.imageView4);
-        imageView[3].setOnClickListener(this);
+        layout = findViewById(R.id.linearLayout1);
         progress = new ProgressDialog(this);
 
         this.connection = ConnectionHandler.getConnection();
@@ -69,8 +63,7 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
 
     @Override
     public void onClick(View v) {
-        ImageView imageView = findViewById(v.getId());
-        String requestedSpotId = (String) imageView.getTag();
+        String requestedSpotId = (String) v.getTag();
         progress.setTitle("download");
         progress.setMessage("attendere il download dello spot pubblicitario...");
         progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
@@ -125,6 +118,36 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
             if(message.getMessageCode().equals(MESSAGE_TYPE.VIDEO_LIST_MESSAGE)){
                 VideoListMessage videoListMessage = (VideoListMessage) message;
 
+                for(AvailableVideoInfo videoInfo : videoListMessage.getListaVideoDisponibili()){
+                    LayoutInflater inflater;
+                    inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View viewSlotPubblicita = (View) inflater.inflate(R.layout.slot_video_pubblicitario, null);
+
+                    LinearLayout.LayoutParams slot_spot_param = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT
+                    );
+
+                    slot_spot_param.height = 200;
+                    slot_spot_param.setMargins(0, 10, 0, 0);
+                    viewSlotPubblicita.setLayoutParams(slot_spot_param);
+
+                    TextView titolo = viewSlotPubblicita.findViewById(R.id.titolo_spot_pubblicitario);
+                    TextView descrizione = viewSlotPubblicita.findViewById(R.id.descrizione_spot_pubblicitario);
+                    ImageView immagine = viewSlotPubblicita.findViewById(R.id.immagine_spot_pubblicitario);
+
+                    titolo.setText(videoInfo.getNomeVideo());
+                    descrizione.setText(videoInfo.getDescrizioneVideo());
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(videoInfo.getImage(), 0, videoInfo.getImage().length);
+                    immagine.setImageBitmap(bitmap);
+
+                    viewSlotPubblicita.setTag(videoInfo.getIdVideo());
+                    viewSlotPubblicita.setOnClickListener(VideoListActivity.this);
+
+                    layout.addView(viewSlotPubblicita);
+                }
+
+                /*
                 int count = 0;
                 for (AvailableVideoInfo videoInfo : videoListMessage.getListaVideoDisponibili()) {
                     Bitmap bitmap = BitmapFactory.decodeByteArray(videoInfo.getImage(), 0, videoInfo.getImage().length);
@@ -133,6 +156,7 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
                     imageView[count].setTag(videoInfo.getIdVideo());
                     count++;
                 }
+                */
             }
             else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){
                 AlertDialog alertDialog = new AlertDialog.Builder(VideoListActivity.this).create();

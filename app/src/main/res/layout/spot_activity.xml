@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     android:orientation="vertical"
     tools:context=".SpotActivity">
 
@@ -22,20 +23,27 @@
     <Button
         android:id="@+id/opzione1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/slot_background" />
 
     <Button
         android:id="@+id/opzione2"
+        android:layout_marginTop="5pt"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/slot_background" />
 
     <Button
         android:id="@+id/opzione3"
+        android:layout_marginTop="5pt"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/slot_background" />
 
     <Button
         android:id="@+id/opzione4"
+        android:layout_marginTop="5pt"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/slot_background" />
 </LinearLayout>
