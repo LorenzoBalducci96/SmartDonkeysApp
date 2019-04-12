@@ -3,6 +3,8 @@ package com.example.lorenzo.smartdonkeysapp;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -12,6 +14,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.lorenzo.smartdonkeysapp.model.UserWelcomeMessage;
+import com.makeramen.roundedimageview.RoundedImageView;
+
+import java.io.InputStream;
 
 public class MenuActivity extends AppCompatActivity{
 
@@ -20,10 +25,10 @@ public class MenuActivity extends AppCompatActivity{
     private TextView welcomeMessage;
     private TextView coinsNumber;
     private ImageView profileImageIcon;
-    private Button guardaSpot;
+    private RoundedImageView guardaSpot;
     //private Button visualizzaProfilo;
-    private Button vaiAlMercatino;
-    private Button bottoneGioca;
+    private RoundedImageView vaiAlMercatino;
+    private RoundedImageView bottoneGioca;
     private UserWelcomeMessage profile;
 
     @Override
@@ -35,7 +40,7 @@ public class MenuActivity extends AppCompatActivity{
         welcomeMessage = findViewById(R.id.WelcomeMessage);
         usernameLabel = findViewById(R.id.username_label);
         coinsNumber = findViewById(R.id.coins_number);
-        profileImageIcon = findViewById(R.id.profile_image_icon);
+        profileImageIcon = findViewById(R.id.profile_image);
         guardaSpot = findViewById((R.id.guarda_spot));
         guardaSpot.setOnClickListener(new OnClickListener() {
             @Override
@@ -75,8 +80,8 @@ public class MenuActivity extends AppCompatActivity{
         this.usernameLabel.setText(profile.getUsername());
         this.welcomeMessage.setText(profile.getWelcomeMessage());
         this.coinsNumber.setText(String.valueOf(profile.getCoins()));
-        Bitmap bitmap = BitmapFactory.decodeByteArray(profile.getProfileImage(), 0, profile.getProfileImage().length);
-        this.profileImageIcon.setImageBitmap(bitmap);
+        this.profileImageIcon.setTag(profile.getProfileImage());
+        new DownloadImageTask((ImageView) profileImageIcon).execute();
 
     }
 
@@ -106,6 +111,32 @@ public class MenuActivity extends AppCompatActivity{
         super.onResume();
         this.profile = connection.getProfile();
         this.coinsNumber.setText(String.valueOf(this.profile.getCoins()));
+    }
+
+    private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
+        ImageView bmImage;
+        String res;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+            res = (String) bmImage.getTag();
+        }
+
+        protected Bitmap doInBackground(Void...Voids) {
+
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(res).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }
 
