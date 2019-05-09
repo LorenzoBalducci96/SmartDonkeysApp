@@ -1,22 +1,20 @@
 package com.example.lorenzo.smartdonkeysapp.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Mercatino extends Message implements Serializable {
-    private Map<Coupon, Integer> listaCoupons;
+    private List<Coupon> listaCoupons;
 
-    public Mercatino(){
+    public Mercatino(List<Coupon> couponList){
         super(MESSAGE_TYPE.MERCATINO, "");
-        listaCoupons = new HashMap<Coupon, Integer>();
+        listaCoupons = couponList;
     }
 
-    public void add(Coupon coupon, Integer quantita){
-        listaCoupons.put(coupon, quantita);
-    }
-
-    public Map<Coupon, Integer> getListaCoupons(){
+    public List<Coupon> getListaCoupons(){
         return this.listaCoupons;
     }
 }

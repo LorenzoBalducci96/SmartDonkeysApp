@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,6 +19,8 @@ import com.example.lorenzo.smartdonkeysapp.model.UserWelcomeMessage;
 import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MenuActivity extends AppCompatActivity{
 
@@ -27,9 +31,10 @@ public class MenuActivity extends AppCompatActivity{
     private ImageView profileImageIcon;
     private RoundedImageView guardaSpot;
     //private Button visualizzaProfilo;
-    private RoundedImageView vaiAlMercatino;
+    private Button vaiAlMercatino;
     private RoundedImageView bottoneGioca;
     private UserWelcomeMessage profile;
+    private Button countdownLottery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,7 @@ public class MenuActivity extends AppCompatActivity{
                 guardaSpotPubblicitario();
             }
         });
+        countdownLottery = findViewById(R.id.countdown_lottery);
 
         /*
         visualizzaProfilo = findViewById(R.id.visualizza_profilo);
@@ -81,10 +87,47 @@ public class MenuActivity extends AppCompatActivity{
         this.welcomeMessage.setText(profile.getWelcomeMessage());
         this.coinsNumber.setText(String.valueOf(profile.getCoins()));
         this.profileImageIcon.setTag(profile.getProfileImage());
+
+        //this.profile.setCountdownLottery((long) 10);
+
+        final Handler handler = new Handler();
+        Timer timer = new Timer(false);
+        final TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateCountdown();
+
+                    }
+                });
+            }
+        };
+        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+
+
         new DownloadImageTask((ImageView) profileImageIcon).execute();
 
     }
 
+    private void updateCountdown(){
+        if(profile.getCountdownLottery() >= 86400)
+            this.countdownLottery.setText("- " + profile.getCountdownLottery()/86400 + " giorni");
+        else if(profile.getCountdownLottery() >= 3600)
+            this.countdownLottery.setText(("- " + profile.getCountdownLottery()/3600 + " ore"));
+        else if(profile.getCountdownLottery() >= 60)
+            this.countdownLottery.setText("- " + profile.getCountdownLottery()/60 + " minuti");
+        else if(profile.getCountdownLottery() > 0)
+            this.countdownLottery.setText("- " + profile.getCountdownLottery()+ "");
+        else {
+            this.countdownLottery.setText("scopri il vincitore");
+            //TODO this.countdownLottery.setOnClickListener();
+        }
+
+        if(profile.getCountdownLottery() > 0)
+            this.profile.tickCountdown();
+    }
 
     private void visualizzaProfilo(){
         Intent intent = new Intent(getApplicationContext(), VisualizzaProfiloActivity.class);

@@ -5,13 +5,15 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
-
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,12 +21,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
 import com.example.lorenzo.smartdonkeysapp.model.Message;
 import com.example.lorenzo.smartdonkeysapp.model.UserWelcomeMessage;
 
+import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -32,75 +36,66 @@ import java.security.SecureRandom;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity{
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+public class RegistrationActivity extends AppCompatActivity{
+
+    private RegistrationActivity.UserRegistrationTask mAuthTask = null;
+    private View mLoginFormView;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
-    private EditText serverIp;
+    private EditText mConfirmPasswordView;
+    private Button mConfirmRegistrationButton;
+    private EditText mUsernameView;
     private View mProgressView;
-    private View mLoginFormView;
+    private ImageButton takePhotoButton;
+
+    private Bitmap profileImage;
+
     private Connection connection;
-    private UserWelcomeMessage userWelcomeMessageRetrived = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.registration_activity);
 
-        //TODO modalita normale
-        //connection = new Connection(serverIp.getText().toString());
-        //ConnectionHandler.setConnection(connection);
-
-        // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        Button registerButton = (Button) findViewById(R.id.register_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-        registerButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                register();
-            }
-        });
+        mConfirmPasswordView = (EditText) findViewById(R.id.confirm_password);
+
+        mConfirmRegistrationButton = findViewById(R.id.confirm_button);
+
+        mUsernameView = (EditText) findViewById(R.id.username);
 
         mLoginFormView = findViewById(R.id.login_form);
+
         mProgressView = findViewById(R.id.login_progress);
+
+        takePhotoButton = findViewById(R.id.takePhotoButton);
+
+        mConfirmRegistrationButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                doRegistration();
+            }
+        });
+
+        takePhotoButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatchTakePictureIntent();
+            }
+        });
     }
 
-    private void attemptLogin() {
+    private void doRegistration() {
         connection = ConnectionHandler.getConnection();
         if(connection == null) {
-            serverIp = (EditText) findViewById(R.id.server_ip);
-            if (serverIp.getText().toString().isEmpty())
-                connection = new Connection();
-            else
-                connection = new Connection(serverIp.getText().toString());
+            connection = new Connection();
             ConnectionHandler.setConnection(connection);
         }
-
 
         if (mAuthTask != null) {
             return;
@@ -108,11 +103,14 @@ public class LoginActivity extends AppCompatActivity{
 
         // Reset errors.
         mEmailView.setError(null);
+        mUsernameView.setError(null);
         mPasswordView.setError(null);
-
+        mConfirmPasswordView.setError(null);
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String confirm_password = mConfirmPasswordView.getText().toString();
+        String username = mUsernameView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -123,7 +121,6 @@ public class LoginActivity extends AppCompatActivity{
             focusView = mPasswordView;
             cancel = true;
         }
-
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
@@ -134,13 +131,25 @@ public class LoginActivity extends AppCompatActivity{
             focusView = mEmailView;
             cancel = true;
         }
+        if (!password.equals(confirm_password)) {
+            mConfirmPasswordView.setError(getString(R.string.not_same_values));
+            focusView = mConfirmPasswordView;
+            cancel = true;
+        }
+        if(!validUsername(username)){
+            mUsernameView.setError(getString(R.string.not_valid_username));
+            focusView = mUsernameView;
+            cancel = true;
+        }
 
         if (cancel) {
             focusView.requestFocus();
         } else {
             showProgress(true);
-
-            mAuthTask = new UserLoginTask(email, password);
+            if(profileImage != null) //se ha messo l'immagine del profilo
+                mAuthTask = new UserRegistrationTask(email, password, username, BitMapToString(profileImage));
+            else
+                mAuthTask = new UserRegistrationTask(email, password, username, "");
             try {
                 mAuthTask.execute();
             }catch(Exception e){
@@ -149,31 +158,49 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
-    private void register(){
-        loadRegistrationActivity();
-    }
-
-    private void loadRegistrationActivity(){
-        Intent intent = new Intent(getApplicationContext(), RegistrationActivity.class);
-        startActivity(intent);
-        finish();
+    public String BitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
+        byte [] b=baos.toByteArray();
+        String temp=Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
     }
 
     private void loadMenu(){
-        AlertDialog loginDialog = new AlertDialog.Builder(LoginActivity.this).create();
+        AlertDialog loginDialog = new AlertDialog.Builder(RegistrationActivity.this).create();
         loginDialog.setMessage(getString(R.string.success_login));
         loginDialog.show();
-        Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(intent);
         finish();
     }
 
     private boolean isEmailValid(String email) {
+        if(email.contains("\""))
+            return false;
+        if(email.contains("\'"))
+            return false;
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 0;
+        if(password.contains("\""))
+            return false;
+        if(password.contains("\'"))
+            return false;
+        if(password.length() >= 7)
+            return true;
+        return false;
+    }
+
+    private boolean validUsername(String username){
+        if(username.length() < 4)
+            return false;
+        if(username.contains("\""))
+            return false;
+        if(username.contains("\'"))
+            return false;
+        return true;
     }
 
     /**
@@ -241,24 +268,28 @@ public class LoginActivity extends AppCompatActivity{
     }
 
 
-    public class UserLoginTask extends AsyncTask<Void, Void, Message> {
+    public class UserRegistrationTask extends AsyncTask<Void, Void, Message> {
 
         private final String mEmail;
         private final String mPassword;
+        private final String mUsername;
+        private final String mPhoto;
 
 
-        UserLoginTask(String email, String password) {
+        UserRegistrationTask(String email, String password, String username, String photo) {
             mEmail = email;
             mPassword = password;
+            mUsername = username;
+            mPhoto = photo;
         }
 
         @Override
         protected Message doInBackground(Void... params) {
-            try{
-                byte[] salt = getSalt();
-                String securePassword = get_SHA_512_SecurePassword(mPassword, salt);
-                return connection.doLogin(mEmail, securePassword);
+            try {
+                String hashedpassword = get_SHA_512_SecurePassword(mPassword, getSalt());
+                return connection.doRequestRegistration(mEmail, hashedpassword, mUsername, mPhoto);
             }catch(NoSuchAlgorithmException e){
+
             }
             return new Message(MESSAGE_TYPE.ERROR_MESSAGE, "errore nella cifratura della password");
         }
@@ -267,16 +298,16 @@ public class LoginActivity extends AppCompatActivity{
         protected void onPostExecute(final Message message) {
             mAuthTask = null;
             showProgress(false);
-            if(message.getMessageCode() == MESSAGE_TYPE.USER_WELCOME_MESSAGE) {
+            if(message.getMessageCode() == MESSAGE_TYPE.OK) {
                 loadMenu();
             }
             else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){
-                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+                AlertDialog alertDialog = new AlertDialog.Builder(RegistrationActivity.this).create();
                 alertDialog.setMessage(message.getServiceMessage());
                 alertDialog.show();
             }
             else {
-                AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+                AlertDialog alertDialog = new AlertDialog.Builder(RegistrationActivity.this).create();
                 alertDialog.setMessage("risposta inattesa dal server, ti invitiamo a riprovare");
                 alertDialog.show();
             }
@@ -289,4 +320,41 @@ public class LoginActivity extends AppCompatActivity{
             showProgress(false);
         }
     }
+
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            profileImage = (Bitmap) extras.get("data");
+            takePhotoButton.setImageBitmap(profileImage);
+        }
+    }
+
+    public class UploadProfileImage extends AsyncTask<Void, Void, Void> {
+
+        private final String photo;
+        private final String endPoint;
+
+
+        UploadProfileImage(String photo, String endPoint) {
+            this.photo = photo;
+            this.endPoint = endPoint;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            return null;
+        }
+
+    }
+
 }

@@ -26,11 +26,14 @@ import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
 import com.example.lorenzo.smartdonkeysapp.model.Message;
 import com.example.lorenzo.smartdonkeysapp.model.Result;
 import com.example.lorenzo.smartdonkeysapp.model.Spot;
+import com.example.lorenzo.smartdonkeysapp.model.SpotList;
 import com.example.lorenzo.smartdonkeysapp.model.VideoListMessage;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 
 public class VideoListActivity extends AppCompatActivity implements OnClickListener{
@@ -38,6 +41,7 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
     Connection connection;
     ProgressDialog progress;
     LinearLayout layout;
+    Button returnHome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,14 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
         setContentView(R.layout.video_list_activity);
         layout = findViewById(R.id.linearLayout1);
         progress = new ProgressDialog(this);
+        returnHome = findViewById(R.id.return_home);
+        returnHome.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         this.connection = ConnectionHandler.getConnection();
 
@@ -64,39 +76,8 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
     @Override
     public void onClick(View v) {
         String requestedSpotId = (String) v.getTag();
-        progress.setTitle("download");
-        progress.setMessage("attendere il download dello spot pubblicitario...");
-        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
-        progress.show();
-        SendVideoRequest sendVideoRequest = new SendVideoRequest(requestedSpotId);
-        sendVideoRequest.execute();
-    }
-
-    public class SendVideoRequest extends AsyncTask<Void, Void, Boolean> {
-
-        String requestedSpotId;
-
-        SendVideoRequest(String requestedSpotId) {
-            this.requestedSpotId = requestedSpotId;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return connection.requestSpot(requestedSpotId);
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean availability) {
-            progress.dismiss();
-            if(availability){
-                changeActivity();
-            }
-            else{
-                AlertDialog alertDialog = new AlertDialog.Builder(VideoListActivity.this).create();
-                alertDialog.setMessage("errore imprevisto nella ricezione dello spot dal server");
-                alertDialog.show();
-            }
-        }
+        connection.setChoosedSpot(requestedSpotId);
+        changeActivity();
     }
 
     public class RequestVideoList extends AsyncTask<Void, Void, Message> {
@@ -109,16 +90,16 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
 
         @Override
         protected Message doInBackground(Void... voids) {
-            return connection.requestVideoList();
+            return connection.getSpotList();
         }
 
         @Override
         protected void onPostExecute(final Message message) {
             progress.dismiss();
             if(message.getMessageCode().equals(MESSAGE_TYPE.VIDEO_LIST_MESSAGE)){
-                VideoListMessage videoListMessage = (VideoListMessage) message;
+                SpotList spotList = (SpotList) message;
 
-                for(AvailableVideoInfo videoInfo : videoListMessage.getListaVideoDisponibili()){
+                for(Spot spot : spotList.getSpotList()){
                     LayoutInflater inflater;
                     inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View viewSlotPubblicita = (View) inflater.inflate(R.layout.slot_video_pubblicitario, null);
@@ -136,27 +117,15 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
                     TextView descrizione = viewSlotPubblicita.findViewById(R.id.descrizione_spot_pubblicitario);
                     ImageView immagine = viewSlotPubblicita.findViewById(R.id.immagine_spot_pubblicitario);
 
-                    titolo.setText(videoInfo.getNomeVideo());
-                    descrizione.setText(videoInfo.getDescrizioneVideo());
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(videoInfo.getImage(), 0, videoInfo.getImage().length);
-                    immagine.setImageBitmap(bitmap);
+                    titolo.setText(spot.getTitolo());
+                    descrizione.setText(spot.getDescrizione());
+                    new DownloadImageTask(immagine, spot.getImmagine()).execute();
 
-                    viewSlotPubblicita.setTag(videoInfo.getIdVideo());
+                    viewSlotPubblicita.setTag(spot.getId());
                     viewSlotPubblicita.setOnClickListener(VideoListActivity.this);
 
                     layout.addView(viewSlotPubblicita);
                 }
-
-                /*
-                int count = 0;
-                for (AvailableVideoInfo videoInfo : videoListMessage.getListaVideoDisponibili()) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(videoInfo.getImage(), 0, videoInfo.getImage().length);
-                    imageView[count].setImageBitmap(bitmap);
-                    imageView[count].setClickable(true);
-                    imageView[count].setTag(videoInfo.getIdVideo());
-                    count++;
-                }
-                */
             }
             else if(message.getMessageCode() == MESSAGE_TYPE.ERROR_MESSAGE){
                 AlertDialog alertDialog = new AlertDialog.Builder(VideoListActivity.this).create();
@@ -176,6 +145,32 @@ public class VideoListActivity extends AppCompatActivity implements OnClickListe
         Intent intent = new Intent(getApplicationContext(), SpotActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
+        ImageView bmImage;
+        String res;
+
+        public DownloadImageTask(ImageView bmImage, String res) {
+            this.bmImage = bmImage;
+            this.res = res;
+        }
+
+        protected Bitmap doInBackground(Void...Voids) {
+
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(res).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 package com.example.lorenzo.smartdonkeysapp.model;
 
 public enum MESSAGE_TYPE {
+    OK,
     LOGIN_MESSAGE,
     CREATE_ACCOUNT_MESSAGE,
     VIDEO_LIST_MESSAGE,
@@ -18,6 +19,7 @@ public enum MESSAGE_TYPE {
     MERCATINO_REQUEST,
     ACQUISTO_REQUEST,
     ESITO_ACQUISTO,
+    LOTTERY_TIMEOUT,
     GIOCO_REQUEST,
     CARD,
     HAND,

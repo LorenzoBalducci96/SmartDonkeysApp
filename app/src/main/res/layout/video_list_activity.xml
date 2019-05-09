@@ -9,9 +9,38 @@
     android:orientation="vertical"
     tools:context=".VideoListActivity" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.085"
+        android:background="@drawable/upper_bar"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/return_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:background="@mipmap/home"
+            android:layout_gravity="center"
+            android:layout_marginLeft="4dp"/>
+
+        <TextView
+            android:id="@+id/coins_number"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right|center"
+            android:text=""
+            android:textColor="@android:color/white"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/scrollView1"
         android:orientation="vertical"
+        android:layout_weight="0.47"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 

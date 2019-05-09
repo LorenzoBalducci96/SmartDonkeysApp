@@ -9,8 +9,47 @@
     android:orientation="vertical"
     tools:context=".MercatinoActivity" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.085"
+        android:background="@drawable/upper_bar"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/return_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:background="@mipmap/home"
+            android:layout_gravity="center"
+            android:layout_marginLeft="4dp"/>
+
+        <TextView
+            android:id="@+id/coins_number"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right|center"
+            android:text="0"
+            android:textColor="@android:color/white"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/imageView8"
+            android:layout_margin="8dp"
+            android:layout_weight="0.5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="4pt"
+            android:layout_marginBottom="4pt"
+            app:srcCompat="@mipmap/smartcoin" />
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/scrollView1"
+        android:layout_weight="0.47"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -23,4 +62,6 @@
 
         </LinearLayout>
     </ScrollView>
+
+
 </LinearLayout>

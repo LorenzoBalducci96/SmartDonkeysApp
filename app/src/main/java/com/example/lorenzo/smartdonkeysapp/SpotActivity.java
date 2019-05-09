@@ -4,12 +4,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -45,6 +47,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
 
         this.connection = ConnectionHandler.getConnection();
         videoView = findViewById(R.id.videoView);
+
         domanda = findViewById(R.id.domanda);
         opzione1 = findViewById(R.id.opzione1);
         opzione2 = findViewById(R.id.opzione2);
@@ -55,37 +58,21 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         opzione3.setOnClickListener(this);
         opzione4.setOnClickListener(this);
 
-        try {
-            Message message = connection.getCachedMessage();
+        Spot spot = connection.getChoosedSpot();
+        Uri video = Uri.parse(spot.getVideo());
+        //MediaController mediaController = new MediaController(this);
+        videoView.setMediaController((MediaController) null);
+        videoView.setVideoURI(video);
 
-            if(message.getMessageCode().equals(MESSAGE_TYPE.SPOT)) {
-                Spot spot = (Spot) message;
-                File outputDir = getApplicationContext().getCacheDir(); // context being the Activity pointer
-                File outputFile = File.createTempFile("prefix", "extension", outputDir);
-                FileOutputStream stream = new FileOutputStream(outputFile.getAbsolutePath());
-                stream.write(spot.getVideo());
-                videoView.setVideoPath(outputFile.getAbsolutePath());
-                domanda.setText(spot.getQuestion());
-                opzione1.setText(spot.getAnswers().get(0));
-                opzione2.setText(spot.getAnswers().get(1));
-                opzione3.setText(spot.getAnswers().get(2));
-                opzione4.setText(spot.getAnswers().get(3));
-                spotId = spot.getSpotId();
-                videoView.start();
-            }
-            else if(message.getMessageCode().equals(MESSAGE_TYPE.ERROR_MESSAGE)){
-                AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
-                alertDialog.setMessage(message.getServiceMessage());
-                alertDialog.show();
-            }
-            else{
-                AlertDialog alertDialog = new AlertDialog.Builder(SpotActivity.this).create();
-                alertDialog.setMessage("risposta inattesa dal server, ti preghiamo di riavviare l'applicazione");
-                alertDialog.show();
-            }
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+
+        domanda.setText(spot.getDomanda());
+        opzione1.setText(spot.getOpzioniRisposta().get(0));
+        opzione2.setText(spot.getOpzioniRisposta().get(1));
+        opzione3.setText(spot.getOpzioniRisposta().get(2));
+        opzione4.setText(spot.getOpzioniRisposta().get(3));
+        spotId = spot.getId();
+        videoView.start();
+
     }
 
     @Override
@@ -121,9 +108,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                 Result result = (Result) message;
                 AlertDialog.Builder builder = new AlertDialog.Builder(SpotActivity.this);
                 LayoutInflater inflater;
-
-
-
 
                 connection.updateCoins(result.getEarnedCoins());
                 builder.setMessage(result.getResult() + "\ncoin guadagnati:" + result.getEarnedCoins())

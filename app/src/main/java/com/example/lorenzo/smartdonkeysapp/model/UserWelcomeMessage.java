@@ -1,20 +1,23 @@
 package com.example.lorenzo.smartdonkeysapp.model;
 
 import java.io.Serializable;
+import java.sql.Time;
+import java.util.Date;
 
 public class UserWelcomeMessage extends Message implements Serializable {
     private String username;
-    private byte[] profileImage;
-    private String welcome_message;
+    private String profileImage;
+    private String welcomeMessage;
+    private Long countdownLottery;
     private int coins;
     private int tickets;
 
-    public UserWelcomeMessage(String username, byte[] profileImage, String welcome_message, int coins, int tickets){
+    public UserWelcomeMessage(String username, String profileImage, String welcomeMessage, int coins, int tickets){
         super(MESSAGE_TYPE.USER_WELCOME_MESSAGE, "");
         this.username = username;
         this.profileImage = profileImage;
 
-        this.welcome_message = welcome_message;
+        this.welcomeMessage = welcomeMessage;
         this.coins = coins;
         this.tickets = tickets;
     }
@@ -23,12 +26,12 @@ public class UserWelcomeMessage extends Message implements Serializable {
         return username;
     }
 
-    public byte[] getProfileImage() {
+    public String getProfileImage() {
         return profileImage;
     }
 
     public String getWelcomeMessage() {
-        return welcome_message;
+        return welcomeMessage;
     }
 
     public int getCoins() {
@@ -45,5 +48,21 @@ public class UserWelcomeMessage extends Message implements Serializable {
 
     public void updateTickets(int earnedTickets){
         this.tickets += earnedTickets;
+    }
+
+    public void setCountdownLottery(Long countdownLottery){
+        this.countdownLottery = countdownLottery;
+    }
+
+    public Long getCountdownLottery(){
+        return this.countdownLottery;
+    }
+
+    public boolean tickCountdown(){
+        this.countdownLottery--;
+        if(countdownLottery > 0)
+            return true;
+        else
+            return false;
     }
 }

@@ -4,11 +4,35 @@ import java.io.Serializable;
 
 public class Coupon extends Message implements Serializable {
 
+    private String tipologia;
     private String nomeCoupon;
+    private String premio;
     private String descrizione;
     private int costo;
-    private String link;
-    private byte[] image;
+    private String immagine;
+
+    public Coupon(String tipologia, String nomeCoupon, String premio,
+                  String descrizione, int costo, String immagine) {
+        super(MESSAGE_TYPE.MERCATINO, "");
+        this.tipologia = tipologia;
+        this.nomeCoupon = nomeCoupon;
+        this.premio = premio;
+        this.descrizione = descrizione;
+        this.costo = costo;
+        this.immagine = immagine;
+    }
+
+    public String getTipologia() {
+        return tipologia;
+    }
+
+    public String getNomeCoupon() {
+        return nomeCoupon;
+    }
+
+    public String getPremio() {
+        return premio;
+    }
 
     public String getDescrizione() {
         return descrizione;
@@ -18,25 +42,7 @@ public class Coupon extends Message implements Serializable {
         return costo;
     }
 
-    public Coupon(String nomeCoupon, String descrizione, int costo, String link, byte[] image){
-        super(MESSAGE_TYPE.COUPON, "");
-        this.nomeCoupon = nomeCoupon;
-        this.link = link;
-        this.image = image;
-        this.descrizione = descrizione;
-        this.costo = costo;
-
-    }
-
-    public String getNomeCoupon() {
-        return nomeCoupon;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public byte[] getImage() {
-        return image;
+    public String getImmagine() {
+        return immagine;
     }
 }

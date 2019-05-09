@@ -14,6 +14,7 @@ import android.text.Layout;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -25,11 +26,15 @@ import com.example.lorenzo.smartdonkeysapp.model.MESSAGE_TYPE;
 import com.example.lorenzo.smartdonkeysapp.model.Mercatino;
 import com.example.lorenzo.smartdonkeysapp.model.Message;
 
+import java.io.InputStream;
+
 public class MercatinoActivity extends AppCompatActivity implements View.OnClickListener {
 
     Connection connection;
     ProgressDialog progress;
     LinearLayout linearLayout1;
+    TextView coins;
+    Button homeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +42,11 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.mercatino_activity);
         linearLayout1 = (LinearLayout) findViewById(R.id.linearLayout1);
         progress = new ProgressDialog(this);
+        coins = findViewById(R.id.coins_number);
+        homeButton = findViewById(R.id.return_home);
 
         this.connection = ConnectionHandler.getConnection();
+        coins.setText(String.valueOf(connection.getProfile().getCoins()));
 
         RequestMercatino downloadContent = new RequestMercatino();
         try{
@@ -77,7 +85,33 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
                 Mercatino mercatino = (Mercatino) message;
 
                 int count = 0;
-                for(Coupon coupon : mercatino.getListaCoupons().keySet()) {
+                for(Coupon coupon : mercatino.getListaCoupons()) {
+
+                    /*
+                    LayoutInflater inflater;
+                    inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View viewDeiCoupon = (View) inflater.inflate(R.layout.icona_mercatino , null);
+                    //viewDeiCoupon.setClickable(true);
+                    LinearLayout.LayoutParams slot_coupon_params = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+                    slot_coupon_params.height = 200;
+                    slot_coupon_params.setMargins(0, 10, 0, 0);
+                    viewDeiCoupon.setLayoutParams(slot_coupon_params);
+
+                    ImageView icona = viewDeiCoupon.findViewById(R.id.icona_coupon_mercatino_icona);
+                    new DownloadImageTask(icona, coupon.getImmagine()).execute();
+
+                    viewDeiCoupon.setTag(coupon.getTipologia());
+
+                    count++;
+                    viewDeiCoupon.setOnClickListener(MercatinoActivity.this);
+                    linearLayout1.addView(viewDeiCoupon);
+                    */
+
+
+
                     LayoutInflater inflater;
                     inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View viewDeiCoupon = (View) inflater.inflate(R.layout.coupon_mercatino , null);
@@ -93,8 +127,7 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
                     TextView descrizione = viewDeiCoupon.findViewById(R.id.descrizione_coupon_mercatino);
                     descrizione.setText(coupon.getDescrizione());
                     ImageView icona = viewDeiCoupon.findViewById(R.id.icona_coupon_mercatino);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(coupon.getImage(), 0, coupon.getImage().length);
-                    icona.setImageBitmap(bitmap);
+                    new DownloadImageTask(icona, coupon.getImmagine()).execute();
                     TextView costo = viewDeiCoupon.findViewById(R.id.costo_coupon_mercatino);
                     costo.setText(String.valueOf(coupon.getCosto()));
 
@@ -103,6 +136,7 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
                     count++;
                     viewDeiCoupon.setOnClickListener(MercatinoActivity.this);
                     linearLayout1.addView(viewDeiCoupon);
+                
                 }
             }
             else if(message.getMessageCode().equals(MESSAGE_TYPE.ERROR_MESSAGE)){
@@ -138,12 +172,23 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
                 progress.dismiss();
                 EsitoAcquisto esitoAcquisto = (EsitoAcquisto) message;
                 AlertDialog.Builder builder = new AlertDialog.Builder(MercatinoActivity.this);
-                builder.setMessage(esitoAcquisto.getEsitoAcquisto())
-                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                finish();
-                            }
-                        }).create().show();
+                if(esitoAcquisto.getEsitoAcquisto()) {
+                    builder.setMessage(esitoAcquisto.getMessaggio() + "codice: " + esitoAcquisto.getCouponCode())
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    finish();
+                                }
+                            }).create().show();
+                    connection.updateCoins(-esitoAcquisto.getCosto());
+                }else{
+                    builder.setMessage(esitoAcquisto.getMessaggio())
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    finish();
+                                }
+                            }).create().show();
+                }
+
             }
             else if(message.getMessageCode().equals(MESSAGE_TYPE.ERROR_MESSAGE)){
                 progress.dismiss();
@@ -159,5 +204,32 @@ public class MercatinoActivity extends AppCompatActivity implements View.OnClick
             }
         }
     }
+
+    private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
+        ImageView bmImage;
+        String res;
+
+        public DownloadImageTask(ImageView bmImage, String res) {
+            this.bmImage = bmImage;
+            this.res = res;
+        }
+
+        protected Bitmap doInBackground(Void...Voids) {
+
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(res).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
+
 }
 

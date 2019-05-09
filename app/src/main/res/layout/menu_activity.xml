@@ -8,51 +8,166 @@
     android:orientation="vertical"
     tools:context=".MenuActivity">
 
-    <ImageView
-        android:id="@+id/profile_image_icon"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        app:srcCompat="@mipmap/ic_launcher_round" />
-
-    <TextView
-        android:id="@+id/username_label"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="lorem ipsum"
-        android:textColor="#FFF"
-        android:textSize="24sp" />
+        android:layout_height="0dp"
+        android:layout_weight="0.085"
+        android:background="@drawable/upper_bar"
+        android:orientation="horizontal">
 
-    <TextView
-        android:textColor="#FFF"
-        android:id="@+id/WelcomeMessage"
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_margin="4dp"
+            android:id="@+id/profile_image"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.06"
+            android:src="@mipmap/ic_launcher"
+            app:civ_border_color="#333333"
+            app:civ_border_width="2dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/username_label"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.1"
+                android:text="lorem ipsum"
+                android:textColor="#FFF"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/WelcomeMessage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.1"
+                android:text="TextView"
+                android:textColor="#FFF" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/mercatino"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.03"
+            android:background="@mipmap/cart"
+            android:layout_gravity="center"
+            android:layout_marginRight="12dp"/>
+
+        <Button
+            android:id="@+id/impostazioni"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.03"
+            android:background="@mipmap/impostazioni"
+            android:layout_gravity="center"
+            android:layout_marginRight="6dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_height="0dp"
+        android:layout_weight="0.2"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/coins_number"
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/logo" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textColor="#FFF" />
-
-    <Button
-        android:id="@+id/guarda_spot"
-        android:layout_width="115dp"
-        android:layout_height="115dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.12"
+        android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:background="@mipmap/play" />
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:orientation="horizontal">
+
+        <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/guarda_spot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ricava"
+            app:riv_border_color="#333333"
+            app:riv_border_width="2dip"
+            app:riv_corner_radius="24dip"
+            app:riv_mutate_background="true"
+            app:riv_oval="false"
+            app:riv_tile_mode="clamp" />
+
+        <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/gioca"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/gioca"
+            app:riv_border_color="#333333"
+            app:riv_border_width="2dip"
+            app:riv_corner_radius="24dip"
+            app:riv_mutate_background="true"
+            app:riv_oval="false"
+            app:riv_tile_mode="clamp" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/mercatino"
-        android:layout_width="115dp"
-        android:layout_height="115dp"
+        android:id="@+id/countdown_lottery"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
-        android:background="@mipmap/cart" />
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_weight="0.08"
+        android:background="@mipmap/lotteria"
+        android:scaleType="centerInside"
+        android:text="- 7 giorni"
+        android:textColor="#000"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/gioca"
-        android:layout_width="115dp"
-        android:layout_height="115dp"
-        android:background="@mipmap/games" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.07"
+        android:background="@drawable/bottom_menu_bar"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/coins_number"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="right|center"
+            android:text="0"
+            android:textColor="#FFF"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/imageView8"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="4pt"
+            android:layout_marginBottom="4pt"
+            app:srcCompat="@mipmap/smartcoin" />
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
+    android:baselineAligned="false"
     android:orientation="vertical"
     tools:context=".SpotActivity">
 
@@ -14,48 +15,46 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/domanda"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5pt"
-                android:textColor="@android:color/background_light"
+                android:layout_height="78dp"
+                android:textColor="@android:color/background_dark"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
             <VideoView
                 android:id="@+id/videoView"
                 android:layout_width="match_parent"
-                android:layout_height="237dp" />
+                android:layout_height="175dp" />
 
             <Button
-                android:id="@+id/opzione1"
-                android:layout_margin="2pt"
+                android:id="@+id/opzione3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5pt"
                 android:background="@drawable/slot_background" />
 
             <Button
                 android:id="@+id/opzione2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="2pt"
-                android:background="@drawable/slot_background" />
-
-            <Button
-                android:id="@+id/opzione3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2pt"
+                android:layout_marginTop="5pt"
                 android:background="@drawable/slot_background" />
 
             <Button
                 android:id="@+id/opzione4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="2pt"
+                android:layout_marginTop="5pt"
+                android:background="@drawable/slot_background" />
+
+            <Button
+                android:id="@+id/opzione1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:background="@drawable/slot_background" />
         </LinearLayout>
     </ScrollView>
